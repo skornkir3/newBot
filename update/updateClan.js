@@ -10,11 +10,7 @@ const pool = new Pool({
 });
 
 // Авторизация в Google API
-async function getSheetsClient() {
-  const auth = new google.auth.GoogleAuth({
-    credentials: JSON.parse(process.env.GOOGLE_SERVICE_JSON),
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"]
-  });
+async function getSheetsClient(auth) {
   return google.sheets({ version: "v4", auth });
 }
 
@@ -60,7 +56,7 @@ module.exports = function (bot, auth, SPREADSHEET_ID) {
       if(clanId){
 
         const userData = updateRes.rows[0];
-        const sheets = await getSheetsClient();
+        const sheets = await getSheetsClient(auth);
 
       // Удаляем пользователя из всех кланов
         for (let i = 1; i <= 5; i++) {

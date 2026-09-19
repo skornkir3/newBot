@@ -24,7 +24,7 @@ function escapeMarkdown(text) {
     .replace(/\[/g, '\\[');
 }
 
-module.exports = function (bot, notifyChatId, inviteLink1, inviteLink2) {
+module.exports = function (bot, notifyChatId, inviteLink1, inviteLink2, auth) {
  // const usersInProcess = require("../clan/stateWiizard");
   profileInviteCallback(bot, usersInProcess);
   registerToSystemCallback(bot, usersInProcess)
@@ -355,7 +355,7 @@ module.exports = function (bot, notifyChatId, inviteLink1, inviteLink2) {
 
         
        /* if(user.data.clanId == 1){
-          await saveDescription(dataToSave);
+          await saveDescription(dataToSave, auth);
         }*/
         
       } catch (err) {

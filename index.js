@@ -40,10 +40,7 @@ const path = require("path");
 const SPREADSHEET_ID = "11BRhGaUWPd7dg_lPBHng0mXlpNJcPyRUkPuwSAQOx78";
 const SHEET_NAME = "Clan";
 
-const credentials = JSON.parse(process.env.GOOGLE_SERVICE_JSON);
-
 const auth = new google.auth.GoogleAuth({
-  credentials,
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
@@ -54,7 +51,7 @@ require("./handlers/inviteGenerator")(bot); // ← генератор инвай
 require("./handlers/inviteClanGenerator")(bot); // ← генератор инвайтов
 require("./handlers/banMember")(bot, auth, SPREADSHEET_ID);
 require("./handlers/unbanMember")(bot, auth, SPREADSHEET_ID);
-require("./handlers/clanJoinBot")(bot, notifyChatId, inviteLink1, inviteLink2);
+require("./handlers/clanJoinBot")(bot, notifyChatId, inviteLink1, inviteLink2, auth);
 require("./handlers/getBanList")(bot);
 require("./handlers/marriage")(bot);
 require("./handlers/listMarriage")(bot);
@@ -76,7 +73,7 @@ require("./update/setNote")(bot);
 require("./handlers/listNick")(bot);
 require("./handlers/changeTagNotification")(bot, notifyChatId, SPREADSHEET_ID);
 
-require("./handlers/saveDescription")(bot);
+require("./handlers/saveDescription")(bot, auth);
 require("./handlers/getDescription")(bot, auth, SPREADSHEET_ID);
 require("./handlers/getClanList")(bot, auth, SPREADSHEET_ID);
 require("./handlers/copyMembersToDb")(bot, auth, SPREADSHEET_ID);

@@ -11,11 +11,7 @@ const pool = new Pool({
 });
 
 // Авторизация Google Sheets
-async function getSheets() {
-  const auth = new google.auth.GoogleAuth({
-    credentials: JSON.parse(process.env.GOOGLE_SERVICE_JSON),
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
+async function getSheets(auth) {
   return google.sheets({ version: "v4", auth });
 }
 
@@ -66,7 +62,7 @@ module.exports = function (bot, auth, SPREADSHEET_ID) {
       if (clanId) {
         const player = await getPlayerDescription(targetTag);
         if (player?.clan) {
-          const sheets = await getSheets();
+          const sheets = await getSheets(auth);
           const range = "Clan" + player.clan;
 
           const res = await sheets.spreadsheets.values.get({

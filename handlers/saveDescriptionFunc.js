@@ -7,21 +7,16 @@ const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 let sheets; // глобальный объект, будет инициализирован 1 раз
 
 // Инициализация авторизации и клиента Sheets
-async function initSheets() {
-  const auth = new google.auth.GoogleAuth({
-    credentials: JSON.parse(process.env.GOOGLE_SERVICE_JSON),
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
-
+async function initSheets(auth) {
   const client = await auth.getClient();
   sheets = google.sheets({ version: 'v4', auth: client });
 }
 
 // Основная функция сохранения/обновления описания
-async function saveDescription(data) {
+async function saveDescription(data, auth) {
   console.log('save');
   console.log(data);
-  if (!sheets) await initSheets(); // инициализация при первом вызове
+  if (!sheets) await initSheets(auth); // инициализация при первом вызове
 
   try {
     const getRes = await sheets.spreadsheets.values.get({

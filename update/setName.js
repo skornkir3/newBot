@@ -14,11 +14,7 @@ const pool = new Pool({
 });
 
 // Авторизация Google Sheets
-async function getSheets() {
-  const auth = new google.auth.GoogleAuth({
-    credentials: JSON.parse(process.env.GOOGLE_SERVICE_JSON),
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
+async function getSheets(auth) {
   return google.sheets({ version: "v4", auth });
 }
 
@@ -93,7 +89,7 @@ module.exports = function (bot, auth, SPREADSHEET_ID) {
 
       // --- Обновляем в Google Sheets ---
       // ищем строку по тегу (как в +ник), меняем колонку имени
-      const sheets = await getSheets();
+      const sheets = await getSheets(auth);
       const range = "Clan" + player.clan; // как у тебя в +ник
       const res = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,

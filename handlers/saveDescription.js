@@ -9,7 +9,7 @@ const admins = [
 ];
 
 // 📬 Обработчик команды "+описание1 @ник"
-module.exports = function (bot) {
+module.exports = function (bot, auth) {
   bot.onText(/^\+описание1\s+@(\S+)\n(.+)/s, async (msg, match) => {
     return;
     const chatId = msg.chat.id;
@@ -41,7 +41,7 @@ module.exports = function (bot) {
     };
     console.log(data);
     await saveMemberDb(data);
-    await saveDescription(data);
+    await saveDescription(data, auth);
 
     bot.sendMessage(chatId, `✅ Описание для ${target_username} сохранено.`, {
       reply_to_message_id: msg.message_id,
