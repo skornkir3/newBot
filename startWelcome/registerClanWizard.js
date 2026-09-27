@@ -1,12 +1,8 @@
 const db = require("../handlers/db");
 const getPlayerDescription = require('./../db/getDescriptionDb');
-const createSubclan = require("../clan/createSubClanDb");
 const registerCallback = require("./registerCallback");
 const registerClan = require("./registerClanDb");
 const deactivateOwnerClans = require("../clan/deactivateOwnerClans");
-const deactivateClanInviteDB = require("../db/deactivateClanInviteDB");
-
-const FALLBACK_CODE = process.env.CLAN_VERIFY_CODE || "417";
 const wizardState = require("../clan/stateWiizard"); 
 
 
@@ -92,7 +88,6 @@ module.exports = function registerClanWizard(bot) {
 
     const p = s.payload;
     p.updatePlayer = false;
-    p.inviteCode = false;
 
     // 2.1 Название клана
     if (s.step === "ask_clan_name") {
@@ -109,33 +104,11 @@ module.exports = function registerClanWizard(bot) {
     if (s.step === "ask_chat_link") {
       const link = normText(msg.text);
       p.clan_link = link;
-      s.step = "ask_code";
-      return bot.sendMessage(msg.chat.id, "✅ Введите проверочный код.");
+      s.step = "continue_after_link";
     }
 
-    // 2.2 Проверочный код
-    if (s.step === "ask_code") {
-      const code = msg.text;
-      const res = await db.query(
-        'SELECT * FROM clan_invites WHERE code = $1 AND active = true',
-        [code]
-      );
-      if (res.rowCount === 0) {
-        return bot.sendMessage(
-          msg.chat.id,
-          '❌ Код недействителен или уже использован. Введи снова:'
-        );
-      }
-      p.inviteCode = code;
-     /* const code = normDigits(msg.text);
-      const expected = normDigits(FALLBACK_CODE);
-      if (code !== expected) {
-        return bot.sendMessage(
-          msg.chat.id,
-          "Код неверный. Проверьте и попробуйте ещё раз."
-        );
-      } */
-
+    // 2.2 Продолжаем сразу после ссылки, без проверочного кода
+    if (s.step === "continue_after_link") {
       const state = wizardState.get(userId) || { step: null, payload: {} };
     //  const p = state.payload || (state.payload = {});
 
@@ -258,8 +231,7 @@ module.exports = function registerClanWizard(bot) {
       console.log(p);
       try {
         await deactivateOwnerClans(userId);
-        const clanId =  await registerClan(clanName, userId, telegramTag, p, wizardState); 
-        await deactivateClanInviteDB(clanId, p.inviteCode);
+        await registerClan(clanName, userId, telegramTag, p, wizardState);
         await bot.sendMessage(
           msg.chat.id,
           [

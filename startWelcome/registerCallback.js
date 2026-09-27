@@ -11,7 +11,6 @@
 const registerClan = require("./registerClanDb");
 const getPlayerDescription = require('./../db/getDescriptionDb');
 const deactivateOwnerClans = require("../clan/deactivateOwnerClans");
-const deactivateClanInviteDB = require("../db/deactivateClanInviteDB");
 
 
 module.exports = function handleExistingProfileCallback(bot, wizardState) {
@@ -43,8 +42,7 @@ module.exports = function handleExistingProfileCallback(bot, wizardState) {
         
         try {
           await deactivateOwnerClans(userId);
-          const clanId = await registerClan(p.clan_name, userId, telegramTag, p, wizardState);
-          await deactivateClanInviteDB(clanId, p.inviteCode);
+          await registerClan(p.clan_name, userId, telegramTag, p, wizardState);
           await bot.sendMessage(
             chatId,
             [
