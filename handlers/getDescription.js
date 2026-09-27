@@ -89,8 +89,16 @@ module.exports = function (bot) {
       // Ключ поиска: приоритет actorId
       const key = actorId ? String(actorId) : requestedUsername;
       const player = await getPlayerDescription(key);
+      if (!player) {
+        return bot.sendMessage(
+          chatId,
+          `❌ Описание для ${requestedUsername || `ID ${actorId}`} не найдено. Пользователь ещё не зарегистрирован.`,
+          { reply_to_message_id: msg.message_id }
+        );
+      }
+
       const clanId = await getClanId(chatId);
-      if(player.clanId != clanId ){
+      if (player.clanId != clanId) {
         if(isPrivate && !explicitTag ){
           // все ок
         }   
@@ -103,15 +111,8 @@ module.exports = function (bot) {
         }
       }
 
-      if (!player) {
-        return bot.sendMessage(
-          chatId,
-          `❌ Описание для ${requestedUsername || `ID ${actorId}`} не найдено.`,
-          { reply_to_message_id: msg.message_id }
-        );
-      }
-
       const pubgId = player.pubgId != null ? String(player.pubgId) : '';
+      const age = player.age != null ? String(player.age) : '—';
       // что показывать в заголовке (если искали по ID — показываем ID)
       const subjectForText = actorId ? `ID ${actorId}` : requestedUsername;
       console.log(player);
@@ -122,7 +123,7 @@ module.exports = function (bot) {
 👤 Имя: ${escapeMarkdown(player.name)}
 🏷 Ник: ${escapeMarkdown(player.nick)}
 🎮 PUBG ID: \`${escapeMarkdown(pubgId) || '—'}\`
-🎂 Возраст: ${escapeMarkdown(player.age.toString())}
+🎂 Возраст: ${escapeMarkdown(age)}
 📍 Город: ${escapeMarkdown(player.city)}
       `.trim();  
       if(player.note != null){
