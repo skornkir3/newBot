@@ -6,8 +6,8 @@ const getClanId = require('../clan/getClanId');
 const getBanReason = require('../db/getBanReason');
 
 function escapeMarkdown(text) {
-  if (!text) return '—';
-  return text
+  if (text === null || text === undefined || text === '') return '—';
+  return String(text)
     .replace(/_/g, '\\_')
     .replace(/\*/g, '\\*')
     .replace(/`/g, '\\`')

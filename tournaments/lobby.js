@@ -3,8 +3,8 @@ const isAdminChat = require('../admin/permissionAdminChat');
 const getClanId = require('../clan/getClanId');
 
 function escapeMarkdown(text) {
-  if (!text) return '—';
-  return text
+  if (text === null || text === undefined || text === '') return '—';
+  return String(text)
     .replace(/_/g, '\\_')
     .replace(/\*/g, '\\*')
     .replace(/`/g, '\\`')
