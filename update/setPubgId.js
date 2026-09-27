@@ -1,7 +1,6 @@
 const { Pool } = require("pg");
 const isAdminChat = require('./../admin/permissionAdminChat');
 const getPlayerDescription = require('./../db/getDescriptionDb');
-const { google } = require("googleapis");
 const getClanId = require('../clan/getClanId');
 
 // Подключение к Postgres
@@ -10,7 +9,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-module.exports = function (bot, auth, SPREADSHEET_ID) {
+module.exports = function (bot) {
   bot.onText(/^\+id(?:\s+@(\S+)\s+(.+)|\s+(.+))?$/, async (msg, match) => {
     const chatId = msg.chat.id;
     const fromUser = msg.from.username ? `@${msg.from.username}` : null;

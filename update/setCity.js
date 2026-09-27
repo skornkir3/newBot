@@ -2,22 +2,11 @@
 const { Pool } = require("pg");
 const isAdminChat = require("./../admin/permissionAdminChat");
 const getPlayerDescription = require("./../db/getDescriptionDb");
-const { google } = require("googleapis");
-const getClanId = require('../clan/getClanId');
-
-// ===== Индексы столбцов в Google Sheets =====
-// Город
-const CITY_COL_INDEX = 5;
-const TAG_COL_INDEX = 2;
 
 const pool = new Pool({
   connectionString: process.env.SUPABASE_DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
-
-async function getSheets(auth) {
-  return google.sheets({ version: "v4", auth });
-}
 
 function normalizeTag(tagMaybe) {
   if (!tagMaybe) return null;
@@ -26,7 +15,7 @@ function normalizeTag(tagMaybe) {
   return t;
 }
 
-module.exports = function (bot, auth, SPREADSHEET_ID) {
+module.exports = function (bot) {
   // +город @user Москва  |  +город Санкт-Петербург (для себя)
   bot.onText(/^\+город(?:\s+@(\S+)\s+(.+)|\s+(.+))?$/iu, async (msg, match) => {
     const chatId = msg.chat.id;
@@ -81,35 +70,6 @@ module.exports = function (bot, auth, SPREADSHEET_ID) {
         await pool.query(`UPDATE clan_members SET city = $1 WHERE actor_id = $2`, [newCity, player.actor_id]);
       } else {
         await pool.query(`UPDATE clan_members SET city = $1 WHERE lower(telegram_tag) = lower($2)`, [newCity, targetTag]);
-      }
-
-      const clanId = await getClanId(chatId);
-      if(clanId){
-
-      // --- Google Sheets: обновим строку по тегу ---
-      const sheets = await getSheets(auth);
-      const range = "Clan" + player.clan; // как у тебя в +ник
-      const res = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range });
-      const rows = res.data.values || [];
-      let updated = false;
-      const targetTagLower = targetTag.toLowerCase();
-
-      for (let i = 0; i < rows.length; i++) {
-        const tgCell = (rows[i][TAG_COL_INDEX] || "").toLowerCase();
-        if (tgCell === targetTagLower) {
-          rows[i][CITY_COL_INDEX] = newCity;
-          updated = true;
-        }
-      }
-
-      if (updated) {
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: SPREADSHEET_ID,
-          range,
-          valueInputOption: "RAW",
-          resource: { values: rows },
-        });
-      }
       }
 
       await bot.sendMessage(

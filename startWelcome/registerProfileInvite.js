@@ -1,4 +1,3 @@
-const { datastream } = require('googleapis/build/src/apis/datastream');
 const getPlayerDescription = require('./../db/getDescriptionDb');
 const getClan = require('../clan/getClan');
 const getSubClan = require('../clan/getSubClan');

@@ -1,6 +1,5 @@
 const db = require('./db');
 const fs = require('fs');
-const saveDescription = require('./saveDescriptionFunc');
 const saveMemberDb = require('./saveMemberDb');
 const getPlayerDescription = require('./../db/getDescriptionDb');
 const getClan = require('../clan/getClan');
@@ -24,7 +23,7 @@ function escapeMarkdown(text) {
     .replace(/\[/g, '\\[');
 }
 
-module.exports = function (bot, notifyChatId, inviteLink1, inviteLink2, auth) {
+module.exports = function (bot, notifyChatId, inviteLink1, inviteLink2) {
  // const usersInProcess = require("../clan/stateWiizard");
   profileInviteCallback(bot, usersInProcess);
   registerToSystemCallback(bot, usersInProcess)
@@ -355,7 +354,7 @@ module.exports = function (bot, notifyChatId, inviteLink1, inviteLink2, auth) {
 
         
        /* if(user.data.clanId == 1){
-          await saveDescription(dataToSave, auth);
+          await saveDescription(dataToSave);
         }*/
         
       } catch (err) {

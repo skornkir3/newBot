@@ -11,7 +11,6 @@
 const registerClan = require("./registerClanDb");
 const getPlayerDescription = require('./../db/getDescriptionDb');
 const deactivateOwnerClans = require("../clan/deactivateOwnerClans");
-const { chat } = require("googleapis/build/src/apis/chat");
 const deactivateClanInviteDB = require("../db/deactivateClanInviteDB");
 
 

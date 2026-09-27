@@ -1,7 +1,6 @@
 const { Pool } = require("pg");
 const isAdminChat = require('./../admin/permissionAdminChat');
 const getPlayerDescription = require('./../db/getDescriptionDb');
-const { google } = require("googleapis");
 const getClanId = require('../clan/getClanId');
 
 // Подключение к Postgres

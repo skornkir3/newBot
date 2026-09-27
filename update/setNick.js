@@ -1,8 +1,5 @@
 const { Pool } = require("pg");
 const isAdminChat = require('./../admin/permissionAdminChat');
-const getPlayerDescription = require('./../db/getDescriptionDb');
-const { google } = require("googleapis");
-const getClanId = require('../clan/getClanId');
 
 // Подключение к Postgres
 const pool = new Pool({
@@ -10,12 +7,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-// Авторизация Google Sheets
-async function getSheets(auth) {
-  return google.sheets({ version: "v4", auth });
-}
-
-module.exports = function (bot, auth, SPREADSHEET_ID) {
+module.exports = function (bot) {
   bot.onText(/^\+ник(?:\s+@(\S+)\s+(.+)|\s+(.+))?$/, async (msg, match) => {
     const chatId = msg.chat.id;
     const fromUser = msg.from.username ? `@${msg.from.username}` : null;
@@ -57,41 +49,6 @@ module.exports = function (bot, auth, SPREADSHEET_ID) {
         `UPDATE clan_members SET nickname = $1 WHERE lower(telegram_tag) = lower($2)`,
         [newNickname, targetTag]
       );
-
-      const clanId = await getClanId(chatId);
-      if (clanId) {
-        const player = await getPlayerDescription(targetTag);
-        if (player?.clan) {
-          const sheets = await getSheets(auth);
-          const range = "Clan" + player.clan;
-
-          const res = await sheets.spreadsheets.values.get({
-            spreadsheetId: SPREADSHEET_ID,
-            range,
-          });
-
-          const rows = res.data.values || [];
-          const targetTagLower = targetTag.toLowerCase();
-
-          let updated = false;
-          for (let i = 0; i < rows.length; i++) {
-            const rowTag = (rows[i]?.[2] || "").toLowerCase();
-            if (rowTag === targetTagLower) {
-              rows[i][1] = newNickname; // столбец B — Ник
-              updated = true;
-            }
-          }
-
-          if (updated) {
-            await sheets.spreadsheets.values.update({
-              spreadsheetId: SPREADSHEET_ID,
-              range,
-              valueInputOption: "RAW",
-              resource: { values: rows },
-            });
-          }
-        }
-      } // ✅ закрыли if (clanId)
 
       return bot.sendMessage(
         chatId,

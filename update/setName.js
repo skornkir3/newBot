@@ -1,22 +1,12 @@
 const { Pool } = require("pg");
 const isAdminChat = require("./../admin/permissionAdminChat");
 const getPlayerDescription = require("./../db/getDescriptionDb");
-const { google } = require("googleapis");
-const getClanId = require('../clan/getClanId');
-
-// ===== Настройка индекса колонки "Имя" в Google Sheets =====
-const NAME_COL_INDEX = 0;
 
 // Подключение к Postgres
 const pool = new Pool({
   connectionString: process.env.SUPABASE_DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
-
-// Авторизация Google Sheets
-async function getSheets(auth) {
-  return google.sheets({ version: "v4", auth });
-}
 
 function normalizeTag(tagMaybe) {
   if (!tagMaybe) return null;
@@ -25,7 +15,7 @@ function normalizeTag(tagMaybe) {
   return t;
 }
 
-module.exports = function (bot, auth, SPREADSHEET_ID) {
+module.exports = function (bot) {
   // +имя @user Новое Имя   |  +имя Новое Имя (для себя)
   bot.onText(/^\+имя(?:\s+@(\S+)\s+(.+)|\s+(.+))?$/iu, async (msg, match) => {
     const chatId = msg.chat.id;
@@ -83,42 +73,6 @@ module.exports = function (bot, auth, SPREADSHEET_ID) {
         );
       }
 
-      const clanId = await getClanId(chatId);
-      if(clanId){
-
-
-      // --- Обновляем в Google Sheets ---
-      // ищем строку по тегу (как в +ник), меняем колонку имени
-      const sheets = await getSheets(auth);
-      const range = "Clan" + player.clan; // как у тебя в +ник
-      const res = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range,
-      });
-
-      const rows = res.data.values || [];
-      let updated = false;
-      const targetTagLower = targetTag.toLowerCase();
-
-      for (let i = 0; i < rows.length; i++) {
-        // предположим, что тег — в колонке C (индекс 2), как в твоём +ник
-        const tgCell = rows[i][2];
-        if (tgCell && tgCell.toLowerCase() === targetTagLower) {
-          // ставим имя в выбранную колонку
-          rows[i][NAME_COL_INDEX] = newName;
-          updated = true;
-        }
-      }
-
-      if (updated) {
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: SPREADSHEET_ID,
-          range,
-          valueInputOption: "RAW",
-          resource: { values: rows },
-        });
-      }
-      }
       await bot.sendMessage(
         chatId,
         `✅ Имя для ${targetTag} обновлено: ${newName}`,
