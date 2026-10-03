@@ -2,8 +2,10 @@ const db = require('../handlers/db');
 
 module.exports = async function addGameClassicMode(id) {
     const sql = `
-    insert into public.member_modes (member_id, mode_id)
-    values ($1, 1)
+      insert into public.member_modes (member_id, mode_id)
+      values ($1, 1)
+      on conflict (member_id, mode_id) do nothing
+      returning member_id, mode_id
   `;
     try {
         const res = await db.query(sql, [id]);

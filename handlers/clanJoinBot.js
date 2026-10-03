@@ -348,7 +348,7 @@ module.exports = function (bot, notifyChatId, inviteLink1, inviteLink2) {
           await bot.sendMessage(chatId, inviteLink);
         }
         try{
-          addGameMode(resultCreateProfile.id);
+          await addGameMode(resultCreateProfile.id);
         }
         catch(e){}
 

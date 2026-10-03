@@ -1,6 +1,7 @@
         // handlers/memberEventsHandler.js
 const getPlayerDescription = require('./../db/getDescriptionDb');
 const getClan = require('../clan/getClan');
+const getClanId = require('../clan/getClanId');
 
 module.exports = function(bot, notifyChatId, threadMessageId) {
           // Отладочный обработчик для всех сообщений
@@ -67,24 +68,47 @@ module.exports = function(bot, notifyChatId, threadMessageId) {
         ? `@${user.username}`
         : `${user.first_name} ${user.last_name || ''}`.trim();
 
-      // если username есть — используем как tag
+      // Ищем прежде всего по actor_id: username мог измениться или отсутствовать.
       const tag = user.username ? `@${user.username}` : null;
-     console.log(tag);
-      // getPlayerDescription async → можно вызывать await
-      const player = tag ? await getPlayerDescription(tag) : null;
+      const player =
+        await getPlayerDescription(String(user.id)) ||
+        (tag ? await getPlayerDescription(tag) : null);
       console.log(player);
+
+      // Основной источник — clan_id участника. Если профиль не найден,
+      // определяем клан по чату, из которого он вышел.
+      const clanId = player?.clanId || await getClanId(msg.chat.id);
+      if (!clanId) {
+        console.warn(`Не удалось определить clan_id для вышедшего пользователя ${user.id}`);
+        return;
+      }
+
+      const clan = await getClan(clanId);
+      const targetChatId = clan?.admin_chat_id ||
+        (Number(clanId) === 1 ? notifyChatId : null);
+
+      if (!targetChatId) {
+        console.warn(`У клана ${clanId} не привязан админ-чат`);
+        return;
+      }
 
       const message =
         `🚪 Вышел из группы "${chatTitle}": ${name}` +
-        (player ? `\nНик: ${player.nick}\nКлан: ${player.clan}` : '');
+        (player ? `\nНик: ${player.nick}\nКлан: ${player.clan}` : '') +
+        `\nClan ID: ${clanId}`;
 
       try {
-        await bot.sendMessage(notifyChatId, message, {
-          reply_to_message_id: threadMessageId, // если он валидный
-         // allow_sending_without_reply: true
-        });
+        const options = {};
+        if (targetChatId === notifyChatId && threadMessageId) {
+          options.reply_to_message_id = threadMessageId;
+          options.allow_sending_without_reply = true;
+        }
+        await bot.sendMessage(targetChatId, message, options);
       } catch (err) {
-       // console.error('⚠️ Ошибка при отправке сообщения в notifyChatId:', err.description || err.message);
+        console.error(
+          `⚠️ Ошибка отправки уведомления в админ-чат клана ${clanId}:`,
+          err.description || err.message,
+        );
       }
 
 
